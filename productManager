@@ -1,3 +1,28 @@
+const fs = require('fs');
+const productsObj = [
+    {
+      id: 1,
+      title: 'Juguete de Spiderman',
+      description: 'Juguete de Amazing Spiderman hecho por funko pop, coleccionable',
+      price: 5000,
+      thumbnail: '/hola/hola/hola',
+      code: '001A',
+      stock: 10,
+    },
+  ]
+
+const asyncOperations = async() => {
+  await fs.promises.writeFile('./products.json', JSON.stringify(productsObj,'\t'))
+  //let resultado = await fs.promises.readFile('./products.json', 'utf-8')
+  //console.log(JSON.parse(resultado))
+  //await fs.promises.appendFile('./products.json', JSON.stringify(productsObj,'\t'))
+  //resultado = await fs.promises.readFile('./products.json', 'utf-8')
+  //console.log(JSON.parse(resultado))
+  //await fs.promises.unlink('./products.json')
+}
+
+asyncOperations();
+
 class ProductManager {
     constructor() {
       this.products = [];
@@ -28,17 +53,23 @@ class ProductManager {
       this.products.push(product);
       this.nextId++;
     }
-  
-    getProducts() {
+
+    getProducts = async() => {
+      let resultado = await fs.promises.readFile('./products.json', 'utf-8')
+      console.log(JSON.parse(resultado))
       return this.products;
     }
   
-    getProductById(id) {
-      const product = this.products.find((product) => product.id === id);
-      if (product) {
-        return product;
-      } else {
-        console.error("Not found");
+    getProductById = async(id) => {
+      let resultado = await fs.promises.readFile('./products.json', 'utf-8')
+      const productsParse = JSON.parse(resultado)
+      for(let product of productsParse){
+        if(product.id === id){
+          console.log("Producto Encontrado:", product);
+          return product;
+        } else {
+          console.error("Producto no encontrado")
+        }
       }
     }
   }
