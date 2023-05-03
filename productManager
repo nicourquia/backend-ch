@@ -1,46 +1,64 @@
 const fs = require('fs');
-const productsObj = [
-    {
-      id: 1,
-      title: 'Juguete de Spiderman',
-      description: 'Juguete de Amazing Spiderman hecho por funko pop, coleccionable',
-      price: 5000,
-      thumbnail: '/hola/hola/hola',
-      code: '001A',
-      stock: 10,
-    },
-  ]
+// const productsObj = [
+//     {
+//       id: 1,
+//       title: 'Juguete de Spiderman',
+//       description: 'Juguete de Amazing Spiderman hecho por funko pop, coleccionable',
+//       price: 5000,
+//       thumbnail: '/hola/hola/hola',
+//       code: '001A',
+//       stock: 10,
+//     },
+//   ]
 
-const asyncOperations = async() => {
-  await fs.promises.writeFile('./products.json', JSON.stringify(productsObj,'\t'))
+
+// const asyncOperations = async() => {
+//   await fs.promises.writeFile('./products.json', JSON.stringify(productsObj,'\t'))
   //let resultado = await fs.promises.readFile('./products.json', 'utf-8')
   //console.log(JSON.parse(resultado))
   //await fs.promises.appendFile('./products.json', JSON.stringify(productsObj,'\t'))
   //resultado = await fs.promises.readFile('./products.json', 'utf-8')
   //console.log(JSON.parse(resultado))
   //await fs.promises.unlink('./products.json')
-}
+//}
 
-asyncOperations();
+//asyncOperations();
 
 class ProductManager {
     constructor() {
+      this.path = null;
       this.products = [];
       this.nextId = 1;
     }
+
+    setPath(route){
+      if(!route){
+        console.error("Todos los campos son obligatorios")
+        return;
+      } else if (route){
+        this.path = route
+        fs.writeFileSync(this.path, '')
+      }
+    }
   
-    addProduct(title, description, price, thumbnail, code, stock) {
+    getProducts = async() => {
+      let resultado = await fs.promises.readFile('./products.json', 'utf-8')
+      console.log(JSON.parse(resultado))
+      return this.products;
+    }
+
+    addProduct = async(title, description, price, thumbnail, code, stock) => {
       if (!title || !description || !price || !thumbnail || !code || !stock) {
         console.error("Todos los campos son obligatorios");
         return;
       }
-  
+      
       const existingProduct = this.products.find((product) => product.code === code);
       if (existingProduct) {
         console.error("El código del producto ya existe");
         return;
       }
-  
+      
       const product = {
         id: this.nextId,
         title,
@@ -50,14 +68,17 @@ class ProductManager {
         code,
         stock
       };
-      this.products.push(product);
-      this.nextId++;
-    }
-
-    getProducts = async() => {
+      
       let resultado = await fs.promises.readFile('./products.json', 'utf-8')
-      console.log(JSON.parse(resultado))
-      return this.products;
+      console.log('resultados:', JSON.parse(resultado))
+      let resultadoParse = JSON.parse(resultado)
+      console.log("resultado parse", resultadoParse)
+      // if(resultadoParse == undefined || resultadoParse == null || resultadoParse == {}){
+      //   fs.promises.writeFile('./products.json', JSON.stringify(product,'\t'))
+      // } else {
+      //   resultadoParse.push(product)
+      // }
+      // this.nextId++;
     }
   
     getProductById = async(id) => {
@@ -72,9 +93,48 @@ class ProductManager {
         }
       }
     }
+
+    updateProduct = async(id, data) => {
+      let resultado = await fs.promises.readFile('./products.json', 'utf-8')
+      const productsParse = JSON.parse(resultado)
+      for(let product of productsParse){
+        if(product.id === id){
+          if (!data.title && !data.description && !data.price && !data.thumbnail && !data.code && !data.stock) {
+            console.error("Debes Completar al menos uno de los campos");
+            return;
+          } else if(data != null || data != '' || data != {}){
+            if(data.title != null || product.title != data.title){
+              product.title = data.title
+            }
+            if(data.description != null || product.description != data.description){
+              product.description = data.description
+            }
+            if(data.price != null || product.price != data.price){
+              product.price = data.price
+            }
+            if(data.thumbnail != null || product.thumbnail != data.thumbnail){
+              product.thumbnail = data.thumbnail
+            }
+            if(data.code != null || product.code != data.code){
+              product.code = data.code
+            }
+            if(data.stock != null || product.stock != data.stock){
+              product.stock = data.stock
+            }
+          }
+
+          console.log("Producto Encontrado:", product);
+          return product;
+        } else {
+          console.error("Producto no encontrado")
+        }
+      }
+    }
   }
 
 const productManager = new ProductManager();
+productManager.setPath('./products.json')
 productManager.addProduct("Juguete de Iron Man", "Juguete de Iron Man Funko Pop Coleccionable", 5000, "/ruta/de/imagen1.jpg", "001", 10);
 console.log(productManager.getProductById(1))
 console.log(productManager.getProducts())
+productManager.updateProduct(1, {price: 6000})
